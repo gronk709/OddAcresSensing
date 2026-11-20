@@ -141,7 +141,7 @@ export default function Dashboard({
   return (
     <main className="page">
       <header className="masthead">
-        <h1>{device?.name ?? "Weather station"}</h1>
+        <h1>{device?.name ?? "Carwoola Weather Station"}</h1>
         <p className="station-meta">
           <span className={`pulse ${connected && !stale ? "live" : "stale"}`} aria-hidden />
           {stale ? "No recent uplink, " : ""}

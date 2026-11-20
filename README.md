@@ -1,4 +1,4 @@
-# Weather station dashboard
+# Carwoola Weather Station dashboard
 
 Live readings from a METER ATMOS 41 on The Things Network, stored in Supabase
 and shown on a Next.js dashboard deployed to Vercel.
