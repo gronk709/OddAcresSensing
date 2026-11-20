@@ -2,7 +2,7 @@
 
 import type { Current } from "@/lib/types";
 import {
-  apparentTemperature, compassPoint, dewPoint, msToKmh, num,
+  apparentTemperature, compassPoint, dewPoint, dewPointFromRH, msToKmh, num,
 } from "@/lib/format";
 
 /** Compass with a needle pointing at the direction the wind is blowing from. */
@@ -63,7 +63,11 @@ export default function NowBand({ current }: { current: Current }) {
   const gust = current.wind_gust_ms ?? null;
   const humidity = current.humidity_pct ?? null;
 
-  const dew = vapour !== null ? dewPoint(vapour) : null;
+  const dew =
+    vapour !== null ? dewPoint(vapour)
+    : temp !== null && humidity !== null ? dewPointFromRH(temp, humidity)
+    : null;
+  const spread = dew !== null && temp !== null ? temp - dew : null;
   const feels =
     temp !== null && vapour !== null && wind !== null
       ? apparentTemperature(temp, vapour, wind)
@@ -81,7 +85,12 @@ export default function NowBand({ current }: { current: Current }) {
             <span>Feels like <b>{num(feels, 1)}°C</b></span>
           )}
           <span>Humidity <b>{num(humidity, 0)}%</b></span>
-          {dew !== null && <span>Dew point <b>{num(dew, 1)}°C</b></span>}
+          {dew !== null && (
+            <span>
+              Dew point <b>{num(dew, 1)}°C</b>
+              {spread !== null && spread < 2 && " · fog or dew likely"}
+            </span>
+          )}
           {gust !== null && <span>Gusting <b>{num(msToKmh(gust), 0)} km/h</b></span>}
         </div>
       </div>

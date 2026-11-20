@@ -29,6 +29,13 @@ export function dewPoint(vapourKpa: number): number | null {
   return (237.3 * ln) / (17.27 - ln);
 }
 
+/** Dew point in °C from air temperature and relative humidity (Magnus). */
+export function dewPointFromRH(tempC: number, rhPct: number): number | null {
+  if (rhPct <= 0) return null;
+  const gamma = Math.log(Math.min(rhPct, 100) / 100) + (17.27 * tempC) / (tempC + 237.3);
+  return (237.3 * gamma) / (17.27 - gamma);
+}
+
 /** Vapour pressure deficit in kPa. Drives evaporation and nectar drying. */
 export function vpd(tempC: number, vapourKpa: number): number {
   return Math.max(0, saturationVapourPressure(tempC) - vapourKpa);
