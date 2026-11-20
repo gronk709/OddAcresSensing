@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase, DEVICE_ID } from "@/lib/supabase";
 import type { Current, Device, Reading } from "@/lib/types";
 import {
-  bin, clockTime, dayLabel, foldCurrent, kpaToHpa, mergeCurrent, msToKmh, num,
+  bin, clockTime, dayLabel, dewPointSeries, foldCurrent, kpaToHpa, mergeCurrent, msToKmh, num,
   seaLevelPressure, series, timeAgo, vpd,
 } from "@/lib/format";
 import NowBand from "./NowBand";
@@ -168,10 +168,13 @@ export default function Dashboard({
       <div className="grid">
         <TrendChart
           title="Temperature"
-          note={`Last ${range} hours`}
+          note={`Air and dew point, last ${range} hours`}
           unit="°C"
           hue="var(--temperature)"
-          traces={[{ points: series(windowRows, "temperature_c"), color: "var(--temperature)", label: "Air" }]}
+          traces={[
+            { points: series(windowRows, "temperature_c"), color: "var(--temperature)", label: "Air" },
+            { points: dewPointSeries(windowRows), color: "var(--dew)", label: "Dew point", dashed: true },
+          ]}
         />
 
         <section className="tile" style={{ ["--tile-hue" as string]: "var(--pressure)" }}>

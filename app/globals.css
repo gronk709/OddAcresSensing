@@ -12,6 +12,7 @@
   --rain:        #2b4fa2;
   --solar:       #c98a06;
   --pressure:    #5b4a8a;
+  --dew:         #1f8a8a;
   --lightning:   #8e2e2e;
 
   --space: 1.5rem;
@@ -33,6 +34,7 @@
     --rain:        #7a9ae8;
     --solar:       #e8b43c;
     --pressure:    #a596d4;
+    --dew:         #5cc4c4;
     --lightning:   #e07070;
 
     color-scheme: dark;

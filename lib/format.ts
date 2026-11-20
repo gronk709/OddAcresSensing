@@ -172,3 +172,16 @@ export function series(rows: Reading[], field: keyof Reading): Bin[] {
   }
   return out;
 }
+
+/** Dew point series, from vapour pressure when present, else temperature and humidity. */
+export function dewPointSeries(rows: Reading[]): Bin[] {
+  const out: Bin[] = [];
+  for (const row of rows) {
+    let d: number | null = null;
+    if (typeof row.vapour_pressure_kpa === "number") d = dewPoint(row.vapour_pressure_kpa);
+    else if (typeof row.temperature_c === "number" && typeof row.humidity_pct === "number")
+      d = dewPointFromRH(row.temperature_c, row.humidity_pct);
+    if (d !== null) out.push({ time: new Date(row.time).getTime(), value: d });
+  }
+  return out;
+}
