@@ -13,6 +13,8 @@
   --solar:       #c98a06;
   --pressure:    #5b4a8a;
   --dew:         #1f8a8a;
+  --rose-1: #b9d6e6; --rose-2: #7fb3cf; --rose-3: #2e6e8e;
+  --rose-4: #e0a12b; --rose-5: #d2561f; --rose-6: #8e1f1f;
   --lightning:   #8e2e2e;
 
   --space: 1.5rem;
@@ -35,6 +37,8 @@
     --solar:       #e8b43c;
     --pressure:    #a596d4;
     --dew:         #5cc4c4;
+    --rose-1: #3a5666; --rose-2: #4f8aa8; --rose-3: #6cb6d6;
+    --rose-4: #e8b43c; --rose-5: #ee7a4a; --rose-6: #ff9a9a;
     --lightning:   #e07070;
 
     color-scheme: dark;
@@ -284,7 +288,7 @@ h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.015em; }
 
 /* ------------------------------------------------------------- wind rose */
 
-.rose-petal { opacity: 0.85; }
+.rose-petal { stroke: var(--surface); stroke-width: 0.5; }
 .rose-ring  { fill: none; stroke: var(--rule); }
 .rose-label { fill: var(--muted); font-size: 11px; text-anchor: middle; }
 

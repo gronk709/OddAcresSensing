@@ -7,12 +7,14 @@ const SIZE = 300;
 const C = SIZE / 2;
 const R = 118;
 
-/** Speed bands in m/s, light to strong. */
+/** Speed bands in m/s, light to strong. Colours are a sequential ramp defined in globals.css. */
 const BANDS = [
-  { max: 2, label: "under 2 m/s", opacity: 0.3 },
-  { max: 4, label: "2–4", opacity: 0.5 },
-  { max: 8, label: "4–8", opacity: 0.72 },
-  { max: Infinity, label: "over 8", opacity: 0.95 },
+  { max: 2, label: "Under 2", color: "var(--rose-1)" },
+  { max: 4, label: "2–4", color: "var(--rose-2)" },
+  { max: 8, label: "4–8", color: "var(--rose-3)" },
+  { max: 12, label: "8–12", color: "var(--rose-4)" },
+  { max: 20, label: "12–20", color: "var(--rose-5)" },
+  { max: Infinity, label: "Over 20", color: "var(--rose-6)" },
 ];
 
 const SECTORS = 16;
@@ -74,8 +76,7 @@ export default function WindRose({ rows, hours }: { rows: Reading[]; hours: numb
                 key={`${sector}-${band}`}
                 className="rose-petal"
                 d={d}
-                fill="var(--wind)"
-                opacity={BANDS[band].opacity}
+                fill={BANDS[band].color}
               />
             );
           });
@@ -96,11 +97,10 @@ export default function WindRose({ rows, hours }: { rows: Reading[]; hours: numb
                   aria-hidden
                   style={{
                     display: "inline-block", width: 10, height: 10, marginRight: 6,
-                    background: "var(--wind)", opacity: band.opacity,
+                    background: band.color,
                   }}
                 />
-                {band.label === "under 2 m/s" ? "Under 2" : band.label}
-                {i === BANDS.length - 1 ? " m/s" : ""}
+                {band.label} m/s
               </th>
               <td>{counts.reduce((sum, bands) => sum + bands[i], 0)}</td>
             </tr>
