@@ -40,6 +40,14 @@ const FIELDS: Record<string, string> = {
   "command": "sdi_cmd",
 };
 
+/**
+ * Plausibility limit for rain in a single uplink (about 15 minutes of
+ * accumulation). 20 mm per 15 min is roughly 80 mm/h, an extreme but real
+ * downpour. A dirty or faulty gauge reports far more, so anything above is
+ * stored as null and logged. The original value stays in `raw`.
+ */
+const MAX_RAIN_MM_PER_UPLINK = 20;
+
 type Item = { label: string; value: unknown; unit?: string; source?: string };
 
 function timingSafeEqual(a: string, b: string): boolean {
@@ -100,6 +108,13 @@ Deno.serve(async (req) => {
   for (const item of items) {
     const column = FIELDS[item.label];
     if (column && typeof item.value === "number") row[column] = item.value;
+  }
+
+  if (typeof row.rain_mm === "number" && row.rain_mm > MAX_RAIN_MM_PER_UPLINK) {
+    console.warn("implausible rain reading discarded", {
+      deviceId, f_cnt: up.f_cnt, rain_mm: row.rain_mm,
+    });
+    row.rain_mm = null;
   }
 
   // The sensor reports distance 0 when there were no strikes, which would
