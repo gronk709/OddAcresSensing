@@ -17,6 +17,9 @@ const BANDS = [
   { max: Infinity, label: "Over 20", color: "var(--rose-6)" },
 ];
 
+/** Readings from the latest RECENT_HOURS of data are outlined; older ones are dimmed. */
+const RECENT_HOURS = 2;
+
 const SECTORS = 16;
 const STEP = 360 / SECTORS;
 
@@ -31,10 +34,15 @@ function arc(cx: number, cy: number, inner: number, outer: number, from: number,
 }
 
 export default function WindRose({ rows, hours }: { rows: Reading[]; hours: number }) {
-  // counts[sector][band]
-  const counts: number[][] = Array.from({ length: SECTORS }, () => BANDS.map(() => 0));
+  // counts[sector][band], split into older and recent readings
+  const blank = () => Array.from({ length: SECTORS }, () => BANDS.map(() => 0));
+  const older = blank();
+  const recent = blank();
   let calm = 0;
   let total = 0;
+
+  const latest = rows.reduce((m, r) => Math.max(m, new Date(r.time).getTime()), 0);
+  const cutoff = latest - RECENT_HOURS * 3600_000;
 
   for (const row of rows) {
     const speed = row.wind_speed_ms;
@@ -43,9 +51,12 @@ export default function WindRose({ rows, hours }: { rows: Reading[]; hours: numb
     total++;
     if (speed < 0.3) { calm++; continue; }
     const sector = Math.round((((dir % 360) + 360) % 360) / STEP) % SECTORS;
-    const band = BANDS.findIndex((b) => speed < b.max);
-    counts[sector][band === -1 ? BANDS.length - 1 : band]++;
+    const found = BANDS.findIndex((b) => speed < b.max);
+    const band = found === -1 ? BANDS.length - 1 : found;
+    (new Date(row.time).getTime() > cutoff ? recent : older)[sector][band]++;
   }
+
+  const counts = older.map((bands, s) => bands.map((n, b) => n + recent[s][b]));
 
   const sectorTotals = counts.map((bands) => bands.reduce((a, b) => a + b, 0));
   const peak = Math.max(1, ...sectorTotals);
@@ -54,7 +65,13 @@ export default function WindRose({ rows, hours }: { rows: Reading[]; hours: numb
   return (
     <section className="tile" style={{ ["--tile-hue" as string]: "var(--wind)" }}>
       <h2>Where the wind came from</h2>
-      <p className="tile-note">Last {hours} hours, by direction and strength</p>
+      <p className="tile-note">
+        Last {hours} hours, by direction and strength.{" "}
+        <span style={{ outline: "1.25px solid var(--ink)", outlineOffset: 1, padding: "0 3px" }}>
+          Outlined
+        </span>{" "}
+        = latest {RECENT_HOURS} hours of readings
+      </p>
 
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="chart" role="img"
            aria-label="Wind rose showing the distribution of wind direction and speed">
@@ -66,20 +83,27 @@ export default function WindRose({ rows, hours }: { rows: Reading[]; hours: numb
           const from = sector * STEP - STEP / 2;
           const to = sector * STEP + STEP / 2;
           let inner = 14;
-          return bands.map((count, band) => {
-            if (!count) return null;
-            const outer = inner + (count / peak) * (R - 14);
-            const d = arc(C, C, inner, outer, from + 1.5, to - 1.5);
-            inner = outer;
-            return (
-              <path
-                key={`${sector}-${band}`}
-                className="rose-petal"
-                d={d}
-                fill={BANDS[band].color}
-              />
-            );
-          });
+          return bands.flatMap((_, band) =>
+            ([["old", older[sector][band]], ["new", recent[sector][band]]] as const).map(
+              ([age, count]) => {
+                if (!count) return null;
+                const outer = inner + (count / peak) * (R - 14);
+                const d = arc(C, C, inner, outer, from + 1.5, to - 1.5);
+                inner = outer;
+                const isNew = age === "new";
+                return (
+                  <path
+                    key={`${sector}-${band}-${age}`}
+                    className="rose-petal"
+                    d={d}
+                    fill={BANDS[band].color}
+                    opacity={isNew ? 1 : 0.5}
+                    style={isNew ? { stroke: "var(--ink)", strokeWidth: 1.25 } : undefined}
+                  />
+                );
+              },
+            ),
+          );
         })}
 
         <text className="rose-label" x={C} y={14}>N</text>
