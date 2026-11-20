@@ -114,5 +114,5 @@ alter publication supabase_realtime add table readings;
 -- Set latitude, longitude and elevation_m with an UPDATE after applying; they
 -- are deliberately not committed here.
 insert into devices (id, name)
-values ('snodek104', 'Weather station')
+values ('snodek104', 'Carwoola Weather Station')
 on conflict (id) do nothing;

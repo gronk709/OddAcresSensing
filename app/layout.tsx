@@ -10,7 +10,7 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "Weather station",
+  title: "Carwoola Weather Station",
   description: "Live readings from an ATMOS 41 on The Things Network.",
 };
 
