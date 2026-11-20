@@ -6,6 +6,7 @@ import { msToKmh, num } from "@/lib/format";
 const SIZE = 300;
 const C = SIZE / 2;
 const R = 118;
+const INNER = 14;
 
 /** Speed bands in m/s, light to strong. Colours are a sequential ramp defined in globals.css. */
 const BANDS = [
@@ -59,35 +60,59 @@ export default function WindRose({ rows, hours }: { rows: Reading[]; hours: numb
   const counts = older.map((bands, s) => bands.map((n, b) => n + recent[s][b]));
 
   const sectorTotals = counts.map((bands) => bands.reduce((a, b) => a + b, 0));
-  const peak = Math.max(1, ...sectorTotals);
+  const peakPct = total ? (Math.max(...sectorTotals) / total) * 100 : 0;
+  // Three rings at whole steps of a "nice" percentage, so the outer ring is
+  // at or just beyond the busiest direction.
+  const STEPS = [0.5, 1, 2, 2.5, 5, 10, 20, 25];
+  const ringStep = STEPS.find((v) => v * 3 >= peakPct) ?? 25;
+  const scaleMax = ringStep * 3;
+  const ringRadius = (pct: number) => INNER + (pct / scaleMax) * (R - INNER);
   const calmPct = total ? (calm / total) * 100 : 0;
 
   return (
     <section className="tile" style={{ ["--tile-hue" as string]: "var(--wind)" }}>
       <h2>Where the wind came from</h2>
-      <p className="tile-note">
-        Last {hours} hours, by direction and strength.{" "}
+      <p className="tile-note" style={{ marginBottom: "0.25rem" }}>
+        Last {hours} hours, by direction and strength.
+      </p>
+      <p className="tile-note" style={{ marginBottom: "0.25rem" }}>
         <span style={{ outline: "1.25px solid var(--ink)", outlineOffset: 1, padding: "0 3px" }}>
           Outlined
         </span>{" "}
         = latest {RECENT_HOURS} hours of readings
       </p>
+      <p className="tile-note">
+        Rings show the share of all readings (calm included) that came from each
+        direction. Petal length is how often, not how strong; colour shows speed.
+      </p>
 
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="chart" role="img"
            aria-label="Wind rose showing the distribution of wind direction and speed">
-        {[0.33, 0.66, 1].map((f) => (
-          <circle key={f} className="rose-ring" cx={C} cy={C} r={R * f} />
+        {[1, 2, 3].map((i) => (
+          <circle key={i} className="rose-ring" cx={C} cy={C} r={ringRadius(ringStep * i)} />
+        ))}
+        {[1, 2, 3].map((i) => (
+          <text
+            key={i}
+            className="rose-label"
+            x={C + 3}
+            y={C - ringRadius(ringStep * i) - 2}
+            textAnchor="start"
+            style={{ fontSize: 9 }}
+          >
+            {ringStep * i}%
+          </text>
         ))}
 
         {counts.map((bands, sector) => {
           const from = sector * STEP - STEP / 2;
           const to = sector * STEP + STEP / 2;
-          let inner = 14;
+          let inner = INNER;
           return bands.flatMap((_, band) =>
             ([["old", older[sector][band]], ["new", recent[sector][band]]] as const).map(
               ([age, count]) => {
                 if (!count) return null;
-                const outer = inner + (count / peak) * (R - 14);
+                const outer = inner + ((count / total) * 100 / scaleMax) * (R - INNER);
                 const d = arc(C, C, inner, outer, from + 1.5, to - 1.5);
                 inner = outer;
                 const isNew = age === "new";
