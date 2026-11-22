@@ -8,14 +8,14 @@ const C = SIZE / 2;
 const R = 118;
 const INNER = 14;
 
-/** Speed bands in m/s, light to strong. Colours are a sequential ramp defined in globals.css. */
+/** Speed bands in km/h, light to strong. Colours are a sequential ramp defined in globals.css. */
 const BANDS = [
-  { max: 2, label: "Under 2", color: "var(--rose-1)" },
-  { max: 4, label: "2–4", color: "var(--rose-2)" },
-  { max: 8, label: "4–8", color: "var(--rose-3)" },
-  { max: 12, label: "8–12", color: "var(--rose-4)" },
-  { max: 20, label: "12–20", color: "var(--rose-5)" },
-  { max: Infinity, label: "Over 20", color: "var(--rose-6)" },
+  { max: 10, label: "Under 10", color: "var(--rose-1)" },
+  { max: 20, label: "10–20", color: "var(--rose-2)" },
+  { max: 30, label: "20–30", color: "var(--rose-3)" },
+  { max: 45, label: "30–45", color: "var(--rose-4)" },
+  { max: 70, label: "45–70", color: "var(--rose-5)" },
+  { max: Infinity, label: "Over 70", color: "var(--rose-6)" },
 ];
 
 /** Readings from the latest RECENT_HOURS of data are outlined; older ones are dimmed. */
@@ -52,7 +52,7 @@ export default function WindRose({ rows, hours }: { rows: Reading[]; hours: numb
     total++;
     if (speed < 0.3) { calm++; continue; }
     const sector = Math.round((((dir % 360) + 360) % 360) / STEP) % SECTORS;
-    const found = BANDS.findIndex((b) => speed < b.max);
+    const found = BANDS.findIndex((b) => msToKmh(speed) < b.max);
     const band = found === -1 ? BANDS.length - 1 : found;
     (new Date(row.time).getTime() > cutoff ? recent : older)[sector][band]++;
   }
@@ -149,7 +149,7 @@ export default function WindRose({ rows, hours }: { rows: Reading[]; hours: numb
                     background: band.color,
                   }}
                 />
-                {band.label} m/s
+                {band.label} km/h
               </th>
               <td>{counts.reduce((sum, bands) => sum + bands[i], 0)}</td>
             </tr>
