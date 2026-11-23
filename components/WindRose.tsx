@@ -10,12 +10,14 @@ const INNER = 14;
 
 /** Speed bands in km/h, light to strong. Colours are a sequential ramp defined in globals.css. */
 const BANDS = [
-  { max: 10, label: "Under 10", color: "var(--rose-1)" },
-  { max: 20, label: "10–20", color: "var(--rose-2)" },
-  { max: 30, label: "20–30", color: "var(--rose-3)" },
-  { max: 45, label: "30–45", color: "var(--rose-4)" },
-  { max: 70, label: "45–70", color: "var(--rose-5)" },
-  { max: Infinity, label: "Over 70", color: "var(--rose-6)" },
+  { max: 5, label: "Under 5", color: "var(--rose-1)" },
+  { max: 10, label: "5–10", color: "var(--rose-2)" },
+  { max: 15, label: "10–15", color: "var(--rose-3)" },
+  { max: 20, label: "15–20", color: "var(--rose-4)" },
+  { max: 30, label: "20–30", color: "var(--rose-5)" },
+  { max: 45, label: "30–45", color: "var(--rose-6)" },
+  { max: 70, label: "45–70", color: "var(--rose-7)" },
+  { max: Infinity, label: "Over 70", color: "var(--rose-8)" },
 ];
 
 /** Readings from the latest RECENT_HOURS of data are outlined; older ones are dimmed. */
