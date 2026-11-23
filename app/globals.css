@@ -264,6 +264,28 @@ h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.015em; }
   color: var(--tile-hue, var(--ink));
 }
 
+.locations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.75rem 0 0;
+}
+
+.locations a {
+  font-size: 0.875rem;
+  padding: 0.2rem 0.7rem;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.locations a[aria-current="page"] {
+  color: var(--surface);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
 .range {
   display: flex;
   gap: 0.25rem;

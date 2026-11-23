@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { supabase, DEVICE_ID } from "@/lib/supabase";
+import type { ReactNode } from "react";
+import { supabase } from "@/lib/supabase";
 import type { Current, Device, Reading } from "@/lib/types";
 import {
   bin, clockTime, dayLabel, dewPointSeries, foldCurrent, kpaToHpa, mergeCurrent, msToKmh, num,
@@ -17,11 +18,14 @@ const RANGES = [6, 24, 48] as const;
 type Range = (typeof RANGES)[number];
 
 export default function Dashboard({
-  initialRows, device, historyHours,
+  initialRows, device, deviceId, locationName, historyHours, switcher,
 }: {
   initialRows: Reading[];
   device: Device | null;
+  deviceId: string;
+  locationName: string | null;
   historyHours: number;
+  switcher: ReactNode;
 }) {
   const [rows, setRows] = useState<Reading[]>(initialRows);
   const [current, setCurrent] = useState<Current>(() => foldCurrent(initialRows));
@@ -40,14 +44,14 @@ export default function Dashboard({
   // replace, otherwise the temperature blanks out when a pressure packet lands.
   useEffect(() => {
     const channel = supabase
-      .channel("readings-live")
+      .channel(`readings-live-${deviceId}`)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "readings",
-          filter: `device_id=eq.${DEVICE_ID}`,
+          filter: `device_id=eq.${deviceId}`,
         },
         (payload) => {
           const row = payload.new as Reading;
@@ -61,7 +65,7 @@ export default function Dashboard({
       .subscribe((status) => setConnected(status === "SUBSCRIBED"));
 
     return () => { void supabase.removeChannel(channel); };
-  }, []);
+  }, [deviceId]);
 
   const windowRows = useMemo(() => {
     const cutoff = now - range * 3600_000;
@@ -126,10 +130,11 @@ export default function Dashboard({
   if (!rows.length) {
     return (
       <main className="page">
+        {switcher}
         <div className="empty">
-          <h1>Waiting for the first uplink</h1>
+          <h1>Waiting for the first uplink{locationName ? ` at ${locationName}` : ""}</h1>
           <p>
-            Nothing has arrived for <code>{DEVICE_ID}</code> in the last {historyHours} hours.
+            Nothing has arrived for <code>{deviceId}</code> in the last {historyHours} hours.
             Send a test uplink from the TTN console and check the function logs with{" "}
             <code>supabase functions logs ttn-ingest</code>.
           </p>
@@ -141,7 +146,7 @@ export default function Dashboard({
   return (
     <main className="page">
       <header className="masthead">
-        <h1>{device?.name ?? "Carwoola Weather Station"}</h1>
+        <h1>{locationName ? `${locationName} weather station` : (device?.name ?? "Weather station")}</h1>
         <p className="station-meta">
           <span className={`pulse ${connected && !stale ? "live" : "stale"}`} aria-hidden />
           {stale ? "No recent uplink, " : ""}
@@ -149,6 +154,8 @@ export default function Dashboard({
           {current.last_seen ? ` at ${clockTime(current.last_seen)}` : ""}
         </p>
       </header>
+
+      {switcher}
 
       <NowBand current={current} />
 

@@ -37,6 +37,8 @@ export type Device = {
   elevation_m: number | null;
 };
 
+export type LocationOption = { id: string; name: string; slug: string; deviceId: string };
+
 /** Current conditions assembled from the most recent non-null value of each field. */
 export type Current = Omit<Partial<Reading>, "time"> & { last_seen: string | null };
 
